@@ -1,4 +1,9 @@
+import QrScanner from "qr-scanner";
+import qrScannerWorkerUrl from "qr-scanner/qr-scanner-worker.min.js?url";
 import { showToast } from "../utils";
+import { validateUserId } from "../types";
+
+QrScanner.WORKER_PATH = qrScannerWorkerUrl;
 
 export function QRScanner(): string {
 	return `
@@ -11,6 +16,32 @@ export function QRScanner(): string {
             </svg>
           </div>
           <h2 class="text-xl font-bold text-slate-800">QR Code Scanner</h2>
+        </div>
+
+        <div class="qr-camera-card">
+          <div class="qr-camera-header">
+            <h3>Scan with Camera</h3>
+            <p>Point your camera at a QR code to auto-fill your User ID.</p>
+          </div>
+          <div class="qr-video-wrapper">
+            <video id="qrVideo" muted playsinline></video>
+            <div class="qr-scan-frame" aria-hidden="true"></div>
+          </div>
+          <div class="qr-camera-controls">
+            <button id="startQrBtn" type="button" class="submit-btn">
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              Start Camera
+            </button>
+            <button id="stopQrBtn" type="button" class="confirm-no" disabled>
+              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 6h12v12H6z"/>
+              </svg>
+              Stop
+            </button>
+          </div>
+          <p id="cameraStatus" class="helper-text">Camera is off. Tap Start Camera to begin scanning.</p>
         </div>
 
         <!-- Upload Area -->
@@ -54,8 +85,15 @@ export function setupQRScanner(onQRDetected: (userId: string) => void): void {
 	const uploadArea = document.getElementById("uploadArea");
 	const qrFileInput = document.getElementById("qrFileInput") as HTMLInputElement;
 	const useQrBtn = document.getElementById("useQrBtn");
+	const resultContainer = document.getElementById("qrResultContainer");
+	const resultText = document.getElementById("qrResultText");
+	const startQrBtn = document.getElementById("startQrBtn") as HTMLButtonElement | null;
+	const stopQrBtn = document.getElementById("stopQrBtn") as HTMLButtonElement | null;
+	const videoEl = document.getElementById("qrVideo") as HTMLVideoElement | null;
+	const cameraStatus = document.getElementById("cameraStatus");
 
 	let currentQRUserId: string | null = null;
+	let qrScanner: QrScanner | null = null;
 
 	uploadArea?.addEventListener("click", () => qrFileInput?.click());
 	uploadArea?.addEventListener("dragover", (e) => {
@@ -85,7 +123,87 @@ export function setupQRScanner(onQRDetected: (userId: string) => void): void {
 		}
 	});
 
-	function handleQRFile(file: File) {
+	function setCameraButtons(isActive: boolean) {
+		if (startQrBtn) startQrBtn.disabled = isActive;
+		if (stopQrBtn) stopQrBtn.disabled = !isActive;
+	}
+
+	function setCameraStatus(message: string, isError = false) {
+		if (!cameraStatus) return;
+		cameraStatus.textContent = message;
+		cameraStatus.setAttribute("data-state", isError ? "error" : "normal");
+	}
+
+	function parseUserId(data: string): string | null {
+		const trimmed = data.trim();
+		if (!trimmed) return null;
+		try {
+			const url = new URL(trimmed);
+			const paramId = url.searchParams.get("id");
+			if (paramId) return paramId.toUpperCase();
+		} catch {
+			// Not a URL, fall back to plain string
+		}
+		return trimmed.toUpperCase();
+	}
+
+	function showResult(userId: string) {
+		currentQRUserId = userId;
+		if (resultText) {
+			resultText.textContent = `User ID: ${userId}`;
+		}
+		if (resultContainer) {
+			resultContainer.style.display = "block";
+		}
+	}
+
+	function handleDecoded(data: string) {
+		const userId = parseUserId(data);
+		if (!userId || !validateUserId(userId)) {
+			showToast("Invalid QR code. Expected User ID like AB-12C3D.", "error");
+			return;
+		}
+		showResult(userId);
+		showToast("QR code detected. Redirecting to check-in.");
+		onQRDetected(userId);
+		void stopCamera();
+	}
+
+	async function startCamera() {
+		if (!videoEl) return;
+		try {
+			if (!qrScanner) {
+				qrScanner = new QrScanner(
+					videoEl,
+					(result) => {
+						handleDecoded(result.data);
+					},
+					{ returnDetailedScanResult: true, preferredCamera: "environment" }
+				);
+			}
+			await qrScanner.start();
+			setCameraButtons(true);
+			setCameraStatus("Scanning... Hold your QR code inside the frame.");
+		} catch (err) {
+			showToast("Camera access failed. Please allow camera permission.", "error");
+			qrScanner?.destroy();
+			qrScanner = null;
+			setCameraButtons(false);
+			setCameraStatus("Camera is off. Tap Start Camera to begin scanning.", true);
+		}
+	}
+
+	async function stopCamera() {
+		if (qrScanner) {
+			await qrScanner.stop();
+			qrScanner.destroy();
+			qrScanner = null;
+		}
+		setCameraButtons(false);
+		setCameraStatus("Camera is off. Tap Start Camera to begin scanning.");
+	}
+
+	async function handleQRFile(file: File) {
 		if (!file) return;
 
 		const uploadAreaEl = uploadArea as HTMLDivElement | null;
@@ -93,42 +211,46 @@ export function setupQRScanner(onQRDetected: (userId: string) => void): void {
 			uploadAreaEl.classList.add("is-loading");
 		}
 
-		const reader = new FileReader();
-		reader.onerror = () => {
-			showToast("Error processing QR Code", "error");
+		try {
+			const result = await QrScanner.scanImage(file, { returnDetailedScanResult: true });
+			handleDecoded(result.data);
+		} catch (err) {
+			showToast("No QR code found in the image.", "error");
+		} finally {
 			if (uploadAreaEl) uploadAreaEl.classList.remove("is-loading");
-		};
-		reader.onload = (e) => {
-			const img = new Image();
-			img.onerror = () => {
-				showToast("Error processing QR Code", "error");
-				if (uploadAreaEl) uploadAreaEl.classList.remove("is-loading");
-			};
-			img.onload = () => {
-				const canvas = document.createElement("canvas");
-				const ctx = canvas.getContext("2d");
-				if (!ctx) return;
-
-				canvas.width = img.width;
-				canvas.height = img.height;
-				ctx.drawImage(img, 0, 0);
-
-				try {
-					// Try to decode QR using a simple approach
-					// In production, you might want to use a QR library like jsQR
-					// For now, we'll just show an error since jsQR isn't included
-					void ctx.getImageData(0, 0, canvas.width, canvas.height);
-					showToast("QR scanning requires jsQR library. Please enter your User ID manually.", "error");
-				} catch (err) {
-					showToast("Error processing QR Code", "error");
-				} finally {
-					if (uploadAreaEl) uploadAreaEl.classList.remove("is-loading");
-				}
-			};
-			img.src = e.target?.result as string;
-		};
-		reader.readAsDataURL(file);
+		}
 	}
+
+	startQrBtn?.addEventListener("click", () => {
+		void startCamera();
+	});
+
+	stopQrBtn?.addEventListener("click", () => {
+		void stopCamera();
+	});
+
+	document.querySelectorAll(".tab-button").forEach((btn) => {
+		btn.addEventListener("click", () => {
+			const tab = (btn as HTMLElement).dataset.tab;
+			if (tab !== "qrscan") {
+				void stopCamera();
+			}
+		});
+	});
+
+	document.addEventListener("visibilitychange", () => {
+		if (document.hidden) {
+			void stopCamera();
+		}
+	});
+
+	void QrScanner.hasCamera().then((hasCamera) => {
+		if (!hasCamera) {
+			setCameraButtons(false);
+			if (startQrBtn) startQrBtn.disabled = true;
+			setCameraStatus("No camera detected on this device.", true);
+		}
+	});
 }
 
 // Function to check URL parameters for auto-fill
