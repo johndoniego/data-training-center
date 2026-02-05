@@ -565,13 +565,71 @@ function exportCheckinsCsv() {
 		return;
 	}
 
-	const header = ["User ID", "Name", "Services", "Check-in Time"];
+	const header = [
+		"User ID",
+		"First Name",
+		"Middle Initial",
+		"Last Name",
+		"Suffix",
+		"Email",
+		"Gender",
+		"Birthdate",
+		"Age Group",
+		"Phone",
+		"Nationality",
+		"Region",
+		"Address Building",
+		"Address Street",
+		"Address Barangay",
+		"Address City",
+		"Address Province",
+		"Sector",
+		"Agency",
+		"Office",
+		"Designation",
+		"Senior Citizen",
+		"Differently Abled",
+		"Solo Parent",
+		"Civil Status",
+		"Registration Created At",
+		"Services",
+		"Check-in Time",
+	];
 	const rows = filteredCheckins.map((entry) => {
 		const reg = registrations.find((r) => r.user_id === entry.user_id);
-		const name = reg ? `${reg.first_name} ${reg.last_name}` : "Unknown";
 		const services = entry.services.join("; ");
 		const checkinTime = new Date(entry.entry_time * 1000).toLocaleString();
-		return [entry.user_id, name, services, checkinTime].map(escapeCsvValue);
+		const registrationCreatedAt = reg ? new Date(reg.created_at * 1000).toLocaleString() : "";
+		return [
+			entry.user_id,
+			reg?.first_name || "",
+			reg?.middle_initial || "",
+			reg?.last_name || "",
+			reg?.suffix || "",
+			reg?.email || "",
+			reg?.gender || "",
+			reg?.birthdate || "",
+			reg?.age_group || "",
+			reg?.phone || "",
+			reg?.nationality || "",
+			reg?.region || "",
+			reg?.address?.building || "",
+			reg?.address?.street || "",
+			reg?.address?.barangay || "",
+			reg?.address?.city || "",
+			reg?.address?.province || "",
+			reg?.sector || "",
+			reg?.agency || "",
+			reg?.office || "",
+			reg?.designation || "",
+			reg?.senior_citizen || "",
+			reg?.differently_abled || "",
+			reg?.solo_parent || "",
+			reg?.civil_status || "",
+			registrationCreatedAt,
+			services,
+			checkinTime,
+		].map(escapeCsvValue);
 	});
 
 	const csv = [header.map(escapeCsvValue).join(","), ...rows.map((row) => row.join(","))].join("\n");
