@@ -311,19 +311,19 @@ body {
   box-shadow: 0 8px 16px rgba(14, 165, 233, 0.15);
 }
 
-.service-checkbox {
+.service-input {
   position: absolute;
   opacity: 0;
   cursor: pointer;
 }
 
-.service-card:has(.service-checkbox:checked) {
+.service-card:has(.service-input:checked) {
   border-color: #10b981;
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
-.service-card:has(.service-checkbox:checked) .service-checkmark {
+.service-card:has(.service-input:checked) .service-checkmark {
   opacity: 1;
   transform: scale(1);
 }

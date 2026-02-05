@@ -27,11 +27,11 @@ export function CheckInForm(): string {
 
           <!-- Service Selection -->
           <div class="input-group">
-            <label class="input-label">Select Services You Need <span class="required">*</span></label>
-            <p class="helper-text" style="margin-bottom: 12px;">Choose at least one service</p>
+            <label class="input-label">Select Service You Need <span class="required">*</span></label>
+            <p class="helper-text" style="margin-bottom: 12px;">Choose one service</p>
             <div class="service-grid">
               <label class="service-card">
-                <input type="checkbox" name="services" value="Printing" class="service-checkbox">
+                <input type="radio" name="services" value="Printing" class="service-input" required>
                 <div class="service-image-container">
                   <svg class="service-icon" width="80" height="80" fill="#0ea5e9" viewBox="0 0 24 24">
                     <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
@@ -43,7 +43,7 @@ export function CheckInForm(): string {
               </label>
 
               <label class="service-card">
-                <input type="checkbox" name="services" value="PC Use" class="service-checkbox">
+                <input type="radio" name="services" value="PC Use" class="service-input">
                 <div class="service-image-container">
                   <svg class="service-icon" width="80" height="80" fill="#0ea5e9" viewBox="0 0 24 24">
                     <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
@@ -55,7 +55,7 @@ export function CheckInForm(): string {
               </label>
 
               <label class="service-card">
-                <input type="checkbox" name="services" value="Training" class="service-checkbox">
+                <input type="radio" name="services" value="Training" class="service-input">
                 <div class="service-image-container">
                   <svg class="service-icon" width="80" height="80" fill="#0ea5e9" viewBox="0 0 24 24">
                     <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
@@ -67,7 +67,7 @@ export function CheckInForm(): string {
               </label>
             </div>
             <div id="serviceError" class="helper-text" style="color: #ef4444; display: none; margin-top: 8px;">
-              Please select at least one service
+              Please select a service
             </div>
           </div>
 
