@@ -1,13 +1,28 @@
 export function Header(): string {
 	return `
     <div class="header-banner">
-      <div class="logo-container">
-        <img src="https://imgur.com/hcMvsXb.png" alt="DTC Tuguegarao Logo" loading="lazy" 
-          onerror="console.error('Logo failed to load'); this.style.background='#0ea5e9'; this.innerHTML='🏢';" 
-          style="width: 60px; height: 60px; object-fit: contain;">
+      <div class="header-decoration"></div>
+      <div class="header-content">
+        <div class="logo-container">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/DICT_Agency_Seal.svg/1200px-DICT_Agency_Seal.svg.png" 
+               alt="DICT Region 2 Logo" 
+               loading="lazy" 
+               onerror="this.src='https://imgur.com/hcMvsXb.png';">
+        </div>
+        <div class="header-text">
+          <div class="header-badge">Region 2 - Cagayan Valley</div>
+          <h1>Data Training Center</h1>
+          <p>Department of Information and Communications Technology</p>
+        </div>
       </div>
-      <h1 class="text-2xl md:text-3xl font-bold mb-2">DTC Tuguegarao Cagayan</h1>
-      <p class="text-lg opacity-90">DTC Tuguegarao Attendance System</p>
+      <div class="header-tagline">
+        <span class="tagline-icon">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        </span>
+        Attendance & Registration System
+      </div>
     </div>
   `;
 }
