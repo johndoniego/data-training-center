@@ -27,23 +27,6 @@ let regEndDate = "";
 let regSearch = "";
 let regAgencySearch = "";
 
-// Theme state
-type Theme = "light" | "dark" | "system";
-let currentTheme: Theme = (localStorage.getItem("dict_admin_theme") as Theme) || "system";
-
-function applyTheme(theme: Theme): void {
-	localStorage.setItem("dict_admin_theme", theme);
-	currentTheme = theme;
-	
-	const root = document.documentElement;
-	if (theme === "system") {
-		const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-		root.setAttribute("data-theme", prefersDark ? "dark" : "light");
-	} else {
-		root.setAttribute("data-theme", theme);
-	}
-}
-
 // Check authentication
 function checkAuth(): boolean {
 	return sessionStorage.getItem("dict_admin_auth") === "true";
@@ -60,8 +43,6 @@ function setAuth(authenticated: boolean): void {
 function renderApp(): void {
 	const app = document.getElementById("app");
 	if (!app) return;
-
-	applyTheme(currentTheme);
 
 	if (!checkAuth()) {
 		renderLoginPage(app);
@@ -121,11 +102,11 @@ function renderLoginPage(app: HTMLElement): void {
 
 function setupLoginForm(): void {
 	const form = document.getElementById("adminLoginForm") as HTMLFormElement;
-	
+
 	form?.addEventListener("submit", async (e) => {
 		e.preventDefault();
 		const loginBtn = document.getElementById("adminLoginBtn") as HTMLButtonElement;
-		
+
 		const username = (document.getElementById("adminUsername") as HTMLInputElement).value;
 		const password = (document.getElementById("adminPassword") as HTMLInputElement).value;
 
@@ -143,17 +124,6 @@ function setupLoginForm(): void {
 			showToast("Invalid credentials", "error");
 		}
 	});
-}
-
-function getThemeIcon(theme: Theme): string {
-	switch (theme) {
-		case "light":
-			return `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>`;
-		case "dark":
-			return `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>`;
-		case "system":
-			return `<svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>`;
-	}
 }
 
 function renderDashboard(app: HTMLElement): void {
@@ -185,6 +155,13 @@ function renderDashboard(app: HTMLElement): void {
             </svg>
             Registrations
           </button>
+          <div class="nav-divider"></div>
+          <button class="nav-item" id="securityBtn">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </svg>
+            Security
+          </button>
         </nav>
         
         <div class="sidebar-footer">
@@ -205,7 +182,7 @@ function renderDashboard(app: HTMLElement): void {
 
       <!-- Main Content -->
       <main class="admin-main">
-        <!-- Top Header with Theme Switcher -->
+        <!-- Top Header (No Themes) -->
         <header class="admin-header">
           <div class="header-left">
             <button id="menuToggle" class="menu-toggle">
@@ -213,26 +190,22 @@ function renderDashboard(app: HTMLElement): void {
                 <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
               </svg>
             </button>
-            <h1>DICT Region 2 Admin</h1>
+            <h1>Administrator Dashboard</h1>
           </div>
           <div class="header-right">
-            <div class="theme-switcher">
-              <button class="theme-btn ${currentTheme === 'light' ? 'active' : ''}" data-theme="light" title="Light Mode">
-                ${getThemeIcon('light')}
-              </button>
-              <button class="theme-btn ${currentTheme === 'dark' ? 'active' : ''}" data-theme="dark" title="Dark Mode">
-                ${getThemeIcon('dark')}
-              </button>
-              <button class="theme-btn ${currentTheme === 'system' ? 'active' : ''}" data-theme="system" title="System Theme">
-                ${getThemeIcon('system')}
-              </button>
-            </div>
+             <div class="admin-user-profile">
+                <div class="admin-avatar">A</div>
+                <div class="admin-info">
+                   <span class="admin-name">DICT Admin</span>
+                   <span class="admin-role">Super User</span>
+                </div>
+             </div>
           </div>
         </header>
 
         <!-- Statistics Cards -->
         <section class="stats-section">
-          <div class="stat-card stat-primary">
+          <div class="stat-card stat-blue clickable-stat" data-stat="registrations">
             <div class="stat-icon">
               <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
@@ -244,7 +217,7 @@ function renderDashboard(app: HTMLElement): void {
             </div>
           </div>
 
-          <div class="stat-card stat-secondary">
+          <div class="stat-card stat-red clickable-stat" data-stat="checkins">
             <div class="stat-icon">
               <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M11 7L9.6 8.4l2.6 2.6H2v2h10.2l-2.6 2.6L11 17l5-5-5-5zm9 12h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
@@ -256,7 +229,7 @@ function renderDashboard(app: HTMLElement): void {
             </div>
           </div>
 
-          <div class="stat-card stat-tertiary">
+          <div class="stat-card stat-yellow clickable-stat" data-stat="today-checkins">
             <div class="stat-icon">
               <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/>
@@ -271,21 +244,21 @@ function renderDashboard(app: HTMLElement): void {
 
         <!-- Service Statistics -->
         <section class="service-stats">
-          <div class="service-stat printing">
+          <div class="service-stat printing clickable-stat" data-stat="printing">
             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
               <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/>
             </svg>
             <span id="printingCount" class="service-count">0</span>
             <span class="service-label">Printing</span>
           </div>
-          <div class="service-stat pcuse">
+          <div class="service-stat pcuse clickable-stat" data-stat="pcuse">
             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
               <path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/>
             </svg>
             <span id="pcUseCount" class="service-count">0</span>
             <span class="service-label">PC Use</span>
           </div>
-          <div class="service-stat training">
+          <div class="service-stat training clickable-stat" data-stat="training">
             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
               <path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
             </svg>
@@ -495,21 +468,55 @@ function renderDashboard(app: HTMLElement): void {
       <div id="sidebarOverlay" class="sidebar-overlay"></div>
     </div>
     <div id="toastContainer"></div>
+
+    <!-- Security Modal -->
+    <div id="securityModal" class="admin-modal">
+      <div class="admin-modal-content">
+        <div class="admin-modal-header">
+          <h3>
+            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </svg>
+            Security Settings
+          </h3>
+          <button id="closeSecurityModal" class="modal-close-btn">
+            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <form id="securityForm" class="admin-modal-body">
+          <div class="input-group">
+            <label for="currentPassword" class="input-label">Current Password</label>
+            <input type="password" id="currentPassword" class="input-field" placeholder="Enter current password" required>
+          </div>
+          <div class="input-group">
+            <label for="newUsername" class="input-label">New Username (optional)</label>
+            <input type="text" id="newUsername" class="input-field" placeholder="Leave blank to keep current">
+          </div>
+          <div class="input-group">
+            <label for="newPassword" class="input-label">New Password (optional)</label>
+            <input type="password" id="newPassword" class="input-field" placeholder="Leave blank to keep current">
+          </div>
+          <div class="input-group">
+            <label for="confirmPassword" class="input-label">Confirm New Password</label>
+            <input type="password" id="confirmPassword" class="input-field" placeholder="Confirm new password">
+          </div>
+          <div class="admin-modal-footer">
+            <button type="button" id="cancelSecurityBtn" class="cancel-btn">Cancel</button>
+            <button type="submit" class="submit-btn">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
   `;
 
 	setupDashboard();
 }
 
 function setupDashboard(): void {
-	// Theme switcher
-	document.querySelectorAll(".theme-btn").forEach(btn => {
-		btn.addEventListener("click", () => {
-			const theme = (btn as HTMLElement).dataset.theme as Theme;
-			applyTheme(theme);
-			document.querySelectorAll(".theme-btn").forEach(b => b.classList.remove("active"));
-			btn.classList.add("active");
-		});
-	});
+	// Theme switcher code removed
+
 
 	// Navigation
 	document.querySelectorAll(".nav-item[data-view]").forEach(btn => {
@@ -553,6 +560,44 @@ function setupDashboard(): void {
 	overlay?.addEventListener("click", () => {
 		sidebar?.classList.remove("open");
 		overlay?.classList.remove("active");
+	});
+
+	// Clickable stat cards
+	document.querySelectorAll(".clickable-stat").forEach(card => {
+		card.addEventListener("click", () => {
+			const stat = (card as HTMLElement).dataset.stat;
+			handleStatClick(stat || "");
+		});
+	});
+
+	// Security modal
+	const securityBtn = document.getElementById("securityBtn");
+	const securityModal = document.getElementById("securityModal");
+	const closeSecurityModal = document.getElementById("closeSecurityModal");
+	const cancelSecurityBtn = document.getElementById("cancelSecurityBtn");
+	const securityForm = document.getElementById("securityForm") as HTMLFormElement;
+
+	securityBtn?.addEventListener("click", () => {
+		securityModal?.classList.add("active");
+	});
+
+	closeSecurityModal?.addEventListener("click", () => {
+		securityModal?.classList.remove("active");
+	});
+
+	cancelSecurityBtn?.addEventListener("click", () => {
+		securityModal?.classList.remove("active");
+	});
+
+	securityModal?.addEventListener("click", (e) => {
+		if (e.target === securityModal) {
+			securityModal.classList.remove("active");
+		}
+	});
+
+	securityForm?.addEventListener("submit", (e) => {
+		e.preventDefault();
+		handleSecurityUpdate();
 	});
 
 	// Calendar navigation
@@ -723,10 +768,10 @@ async function loadAdminData(): Promise<void> {
 function renderCalendar(): void {
 	const monthNames = ["January", "February", "March", "April", "May", "June",
 		"July", "August", "September", "October", "November", "December"];
-	
+
 	const year = currentCalendarDate.getFullYear();
 	const month = currentCalendarDate.getMonth();
-	
+
 	const monthLabel = document.getElementById("currentMonth");
 	if (monthLabel) {
 		monthLabel.textContent = `${monthNames[month]} ${year}`;
@@ -737,24 +782,40 @@ function renderCalendar(): void {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
-	// Count items per day
-	const dayCounts: Record<string, number> = {};
+	// Collect items per day with names
+	const dayData: Record<string, { count: number; names: string[] }> = {};
 	const data = activeView === "checkins" ? checkins : registrations;
-	
+
 	data.forEach(item => {
-		const timestamp = activeView === "checkins" 
-			? (item as CheckInEntry).entry_time 
+		const timestamp = activeView === "checkins"
+			? (item as CheckInEntry).entry_time
 			: (item as UserRegistration).created_at;
 		const date = new Date(timestamp * 1000);
 		const dateStr = formatDateKey(date);
-		dayCounts[dateStr] = (dayCounts[dateStr] || 0) + 1;
+
+		if (!dayData[dateStr]) {
+			dayData[dateStr] = { count: 0, names: [] };
+		}
+		dayData[dateStr].count++;
+
+		// Get name for display
+		if (activeView === "checkins") {
+			const checkin = item as CheckInEntry;
+			const reg = registrations.find(r => r.user_id === checkin.user_id);
+			if (reg) {
+				dayData[dateStr].names.push(`${reg.first_name} ${reg.last_name}`);
+			}
+		} else {
+			const reg = item as UserRegistration;
+			dayData[dateStr].names.push(`${reg.first_name} ${reg.last_name}`);
+		}
 	});
 
 	const calendarDays = document.getElementById("calendarDays");
 	if (!calendarDays) return;
 
 	let html = "";
-	
+
 	// Empty cells before first day
 	for (let i = 0; i < firstDay; i++) {
 		html += `<div class="calendar-day empty"></div>`;
@@ -764,16 +825,36 @@ function renderCalendar(): void {
 	for (let day = 1; day <= daysInMonth; day++) {
 		const date = new Date(year, month, day);
 		const dateStr = formatDateKey(date);
-		const count = dayCounts[dateStr] || 0;
+		const data = dayData[dateStr] || { count: 0, names: [] };
 		const isToday = date.getTime() === today.getTime();
 		const isSelected = selectedDate === dateStr;
-		const hasData = count > 0;
+		const hasData = data.count > 0;
+
+		// Show up to 3 names and "+X MORE" for extras
+		const maxNamesToShow = 3;
+		const namesToShow = data.names.slice(0, maxNamesToShow);
+		const extraCount = data.names.length - maxNamesToShow;
+
+		let namesHtml = "";
+		if (hasData) {
+			namesHtml = `<div class="day-names">`;
+			namesToShow.forEach(name => {
+				namesHtml += `<div class="day-name-item">• ${name}</div>`;
+			});
+			if (extraCount > 0) {
+				namesHtml += `<div class="day-name-more">+ ${extraCount} MORE</div>`;
+			}
+			namesHtml += `</div>`;
+		}
 
 		html += `
       <div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''} ${hasData ? 'has-data' : ''}" 
            data-date="${dateStr}">
-        <span class="day-number">${day}</span>
-        ${count > 0 ? `<span class="day-count">${count}</span>` : ''}
+        <div class="day-header">
+          <span class="day-number">${day}</span>
+          ${data.count > 0 ? `<span class="day-count">${data.count}</span>` : ''}
+        </div>
+        ${namesHtml}
       </div>
     `;
 	}
@@ -988,7 +1069,7 @@ function renderAnalytics(): void {
 
 function getFilteredData(): (CheckInEntry | UserRegistration)[] {
 	let data = activeView === "checkins" ? [...checkins] : [...registrations];
-	
+
 	if (activeView === "checkins") {
 		// Apply filters for check-ins
 		if (checkinServiceFilter) {
@@ -1028,13 +1109,13 @@ function getFilteredData(): (CheckInEntry | UserRegistration)[] {
 		}
 		if (regAgencySearch) {
 			const search = regAgencySearch.toLowerCase();
-			data = (data as UserRegistration[]).filter(r => 
+			data = (data as UserRegistration[]).filter(r =>
 				r.agency.toLowerCase().includes(search)
 			);
 		}
 		if (regSearch) {
 			const search = regSearch.toLowerCase();
-			data = (data as UserRegistration[]).filter(r => 
+			data = (data as UserRegistration[]).filter(r =>
 				r.first_name.toLowerCase().includes(search) ||
 				r.last_name.toLowerCase().includes(search) ||
 				r.email.toLowerCase().includes(search)
@@ -1051,7 +1132,7 @@ function getFilteredData(): (CheckInEntry | UserRegistration)[] {
 			(data as UserRegistration[]).sort((a, b) => `${b.first_name} ${b.last_name}`.localeCompare(`${a.first_name} ${a.last_name}`));
 		}
 	}
-	
+
 	return data;
 }
 
@@ -1132,7 +1213,7 @@ function formatDisplayDate(dateStr: string): string {
 
 function exportData(): void {
 	const data = getFilteredData();
-	
+
 	if (data.length === 0) {
 		showToast("No data to export", "error");
 		return;
@@ -1190,6 +1271,93 @@ function downloadCsvFile(csv: string, filename: string): void {
 	document.body.removeChild(link);
 	window.URL.revokeObjectURL(url);
 	showToast("Data exported successfully!");
+}
+
+// Handle clickable stat card navigation
+function handleStatClick(stat: string): void {
+	const today = formatDateKey(new Date());
+
+	switch (stat) {
+		case "registrations":
+			activeView = "registrations";
+			displayMode = "logs";
+			regCurrentPage = 1;
+			break;
+		case "checkins":
+			activeView = "checkins";
+			displayMode = "logs";
+			checkinCurrentPage = 1;
+			break;
+		case "today-checkins":
+			activeView = "checkins";
+			displayMode = "calendar";
+			selectedDate = today;
+			break;
+		case "printing":
+			activeView = "checkins";
+			displayMode = "logs";
+			checkinServiceFilter = "Printing";
+			checkinCurrentPage = 1;
+			break;
+		case "pcuse":
+			activeView = "checkins";
+			displayMode = "logs";
+			checkinServiceFilter = "PC Use";
+			checkinCurrentPage = 1;
+			break;
+		case "training":
+			activeView = "checkins";
+			displayMode = "logs";
+			checkinServiceFilter = "Training";
+			checkinCurrentPage = 1;
+			break;
+	}
+	renderApp();
+}
+
+// Handle security settings update
+function handleSecurityUpdate(): void {
+	const currentPasswordInput = document.getElementById("currentPassword") as HTMLInputElement;
+	const newUsernameInput = document.getElementById("newUsername") as HTMLInputElement;
+	const newPasswordInput = document.getElementById("newPassword") as HTMLInputElement;
+	const confirmPasswordInput = document.getElementById("confirmPassword") as HTMLInputElement;
+
+	const currentPassword = currentPasswordInput.value;
+	const newUsername = newUsernameInput.value.trim();
+	const newPassword = newPasswordInput.value;
+	const confirmPassword = confirmPasswordInput.value;
+
+	// Verify current password (hardcoded for now - in production, this would be server-side)
+	if (currentPassword !== "Password123!") {
+		showToast("Current password is incorrect", "error");
+		return;
+	}
+
+	// Validate new password if provided
+	if (newPassword && newPassword !== confirmPassword) {
+		showToast("New passwords do not match", "error");
+		return;
+	}
+
+	if (newPassword && newPassword.length < 8) {
+		showToast("New password must be at least 8 characters", "error");
+		return;
+	}
+
+	// Show success (in production, this would update credentials on the server)
+	let message = "Settings updated successfully";
+	if (newUsername) {
+		message = `Username would be changed to: ${newUsername}`;
+	}
+	if (newPassword) {
+		message = newUsername ? "Username and password updated" : "Password updated successfully";
+	}
+
+	showToast(message);
+
+	// Close modal and clear form
+	document.getElementById("securityModal")?.classList.remove("active");
+	(document.getElementById("securityForm") as HTMLFormElement)?.reset();
 }
 
 // Listen for system theme changes

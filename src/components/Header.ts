@@ -1,28 +1,46 @@
 export function Header(): string {
 	return `
     <div class="header-banner">
-      <div class="header-decoration"></div>
-      <div class="header-content">
-        <div class="logo-container">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/DICT_Agency_Seal.svg/1200px-DICT_Agency_Seal.svg.png" 
-               alt="DICT Region 2 Logo" 
-               loading="lazy" 
-               onerror="this.src='https://imgur.com/hcMvsXb.png';">
+      <!-- Animated background decorations -->
+      <div class="header-bg-decoration">
+        <div class="header-blob header-blob-1"></div>
+        <div class="header-blob header-blob-2"></div>
+        <div class="header-blob header-blob-3"></div>
+        <div class="header-grid-pattern"></div>
+      </div>
+      
+      <!-- Accent bar at top -->
+      <div class="header-accent-bar"></div>
+      
+      <div class="header-content-row">
+        <div class="header-logo-wrapper">
+          <div class="header-logo-glow"></div>
+          <img src="./complete.png" 
+               alt="DICT Region 2 - Cagayan Valley" 
+               class="header-complete-logo"
+               loading="lazy">
         </div>
-        <div class="header-text">
-          <div class="header-badge">Region 2 - Cagayan Valley</div>
-          <h1>Data Training Center</h1>
-          <p>Department of Information and Communications Technology</p>
+        
+        <div class="header-divider"></div>
+        
+        <div class="header-title-block">
+          <div class="header-badge">
+            <span class="header-badge-icon">🏛️</span>
+            <span>Government Digital Services</span>
+          </div>
+          <h1 class="header-title">
+            <span class="header-title-text">Digital Transformation Center</span>
+            <span class="header-title-shine"></span>
+          </h1>
+          <p class="header-subtitle">
+            <span class="header-subtitle-icon">📋</span>
+            Attendance & Registration System
+          </p>
         </div>
       </div>
-      <div class="header-tagline">
-        <span class="tagline-icon">
-          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </span>
-        Attendance & Registration System
-      </div>
+      
+      <!-- Bottom accent -->
+      <div class="header-bottom-accent"></div>
     </div>
   `;
 }
